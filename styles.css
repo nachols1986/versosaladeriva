@@ -27,8 +27,8 @@ html[data-theme="dark"] {
   --bg-glass: rgba(15, 17, 21, 0.84);
   --ink-primary: #F1F2F4;
   --ink-body: #DADDE2;
-  --ink-secondary: #A4ACBA;
-  --ink-muted: #8E97A6;
+  --ink-secondary: #B4BCC9;
+  --ink-muted: #9EA7B8;
   --accent: #E8744F;
   --accent-hover: #F29172;
   --accent-tint: rgba(232, 116, 79, 0.14);
