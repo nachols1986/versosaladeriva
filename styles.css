@@ -403,6 +403,35 @@ html[data-theme="dark"] .icon-sun {
   margin-bottom: 0.65rem;
 }
 
+.post-header-actions {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.post-action-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.28rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid var(--rule-strong);
+  background-color: var(--bg-page);
+  color: var(--ink-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, background-color 0.15s ease;
+}
+
+.post-action-pill:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background-color: var(--accent-tint);
+}
+
 .post-date {
   font-family: var(--font-mono);
   font-size: 0.74rem;
@@ -1200,6 +1229,7 @@ html[data-font="sans"] .post-body {
   .back-to-top,
   .lightbox,
   .single-post-nav,
+  .post-header-actions,
   .post-footer-actions,
   .post-reading-time,
   .meta-sep,

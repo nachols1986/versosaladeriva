@@ -137,6 +137,35 @@
       metaTop.appendChild(badge);
     }
 
+    const headerActions = document.createElement('div');
+    headerActions.className = 'post-header-actions';
+
+    const topPrintBtn = document.createElement('button');
+    topPrintBtn.type = 'button';
+    topPrintBtn.className = 'post-action-pill';
+    topPrintBtn.title = 'Imprimir o guardar este relato como PDF';
+    topPrintBtn.innerHTML = `
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polyline points="6 9 6 2 18 2 18 9"></polyline>
+        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+        <rect x="6" y="14" width="12" height="8"></rect>
+      </svg>
+      <span>Imprimir / PDF</span>
+    `;
+    topPrintBtn.addEventListener('click', () => {
+      if (activePostId !== post.id) {
+        activePostId = post.id;
+        window.history.replaceState(null, '', `#${post.id}`);
+        renderMain();
+      }
+      setTimeout(() => {
+        window.print();
+      }, 150);
+    });
+
+    headerActions.appendChild(topPrintBtn);
+    metaTop.appendChild(headerActions);
+
     const h2 = document.createElement('h2');
     h2.className = 'post-title';
     const titleLink = document.createElement('a');
