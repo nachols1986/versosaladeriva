@@ -5,7 +5,7 @@ window.BLOG_POSTS = [
     "date": "2026-11-04",
     "timestamp": "2026-11-04T12:00:00Z",
     "bloggerPath": "/2026/11/clara.html",
-    "draft": true,
+    "draft": false,
     "blocks": [
       {
         "type": "paragraph",
