@@ -1,25 +1,4 @@
 :root,
-html[data-theme="dark"] {
-  --bg-page: #0F1115;
-  --bg-surface: #161920;
-  --bg-subtle: #1D212A;
-  --bg-glass: rgba(15, 17, 21, 0.84);
-  --ink-primary: #F1F2F4;
-  --ink-body: #DADDE2;
-  --ink-secondary: #A4ACBA;
-  --ink-muted: #8E97A6;
-  --accent: #E8744F;
-  --accent-hover: #F29172;
-  --accent-tint: rgba(232, 116, 79, 0.14);
-  --rule: #232833;
-  --rule-strong: #313847;
-  --shadow-card: 0 12px 34px -8px rgba(0, 0, 0, 0.45);
-  --shadow-photo: 0 18px 42px -8px rgba(0, 0, 0, 0.65);
-  --draft-bg: rgba(232, 116, 79, 0.15);
-  --draft-ink: #F29172;
-  color-scheme: dark;
-}
-
 html[data-theme="light"] {
   --bg-page: #F5F6F8;
   --bg-surface: #FFFFFF;
@@ -39,6 +18,27 @@ html[data-theme="light"] {
   --draft-bg: rgba(200, 75, 36, 0.1);
   --draft-ink: #A33816;
   color-scheme: light;
+}
+
+html[data-theme="dark"] {
+  --bg-page: #0F1115;
+  --bg-surface: #161920;
+  --bg-subtle: #1D212A;
+  --bg-glass: rgba(15, 17, 21, 0.84);
+  --ink-primary: #F1F2F4;
+  --ink-body: #DADDE2;
+  --ink-secondary: #A4ACBA;
+  --ink-muted: #8E97A6;
+  --accent: #E8744F;
+  --accent-hover: #F29172;
+  --accent-tint: rgba(232, 116, 79, 0.14);
+  --rule: #232833;
+  --rule-strong: #313847;
+  --shadow-card: 0 12px 34px -8px rgba(0, 0, 0, 0.45);
+  --shadow-photo: 0 18px 42px -8px rgba(0, 0, 0, 0.65);
+  --draft-bg: rgba(232, 116, 79, 0.15);
+  --draft-ink: #F29172;
+  color-scheme: dark;
 }
 
 :root {
@@ -1023,11 +1023,79 @@ html[data-font="sans"] .post-body {
   display: none;
 }
 
-.lightbox img {
+.lightbox-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
   max-width: min(92vw, 960px);
-  max-height: 88vh;
+}
+
+.lightbox-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lightbox img {
+  max-width: min(92vw, 920px);
+  max-height: 78vh;
   border-radius: 8px;
   box-shadow: 0 22px 54px rgba(0, 0, 0, 0.55);
+}
+
+.lightbox-bar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  padding: 0.75rem 1rem;
+  background: rgba(22, 25, 32, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  color: #F1F2F4;
+}
+
+.lightbox-caption {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.lightbox-caption strong {
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #F1F2F4;
+}
+
+.lightbox-caption span {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: #A4ACBA;
+  text-transform: uppercase;
+}
+
+.lightbox-download-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.85rem;
+  border-radius: 999px;
+  background-color: #E8744F;
+  color: #0F1115;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-decoration: none;
+  flex-shrink: 0;
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.lightbox-download-btn:hover {
+  background-color: #F29172;
+  transform: translateY(-1px);
 }
 
 .lightbox-close {
@@ -1106,5 +1174,153 @@ html[data-font="sans"] .post-body {
 
   .archive-tree {
     max-height: 380px;
+  }
+}
+
+/* Print / Gift Keepsake PDF Sheet */
+@media print {
+  @page {
+    size: A4;
+    margin: 22mm 20mm 22mm 20mm;
+  }
+
+  html,
+  body {
+    background: #FFFFFF !important;
+    color: #111111 !important;
+    font-size: 11.5pt;
+  }
+
+  .reading-progress,
+  .topbar,
+  .filter-banner,
+  .archive-rail,
+  .pagination-bar,
+  .site-footer,
+  .back-to-top,
+  .lightbox,
+  .single-post-nav,
+  .post-footer-actions,
+  .post-reading-time,
+  .meta-sep,
+  .draft-badge {
+    display: none !important;
+  }
+
+  .page-frame {
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .hero-header {
+    padding: 0 0 10pt !important;
+    margin-bottom: 18pt !important;
+    border-bottom: 0.75pt solid #CCCCCC !important;
+    text-align: center;
+  }
+
+  .site-title {
+    font-family: 'Literata', Georgia, serif !important;
+    font-size: 16pt !important;
+    font-weight: 600 !important;
+    letter-spacing: 0 !important;
+  }
+
+  .site-title a {
+    color: #111111 !important;
+  }
+
+  .site-epigraph {
+    margin: 4pt auto 0 !important;
+    font-size: 9.5pt !important;
+    color: #555555 !important;
+  }
+
+  .layout-grid {
+    display: block !important;
+  }
+
+  .post-article {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 0 28pt 0 !important;
+    page-break-after: always;
+  }
+
+  .post-article:last-child {
+    page-break-after: auto;
+  }
+
+  .post-header {
+    text-align: center;
+    border-bottom: none !important;
+    padding-bottom: 0 !important;
+    margin-bottom: 16pt !important;
+  }
+
+  .post-meta-top {
+    justify-content: center;
+    margin-bottom: 4pt !important;
+  }
+
+  .post-date {
+    color: #555555 !important;
+    font-size: 8.5pt !important;
+  }
+
+  .post-title {
+    font-family: 'Literata', Georgia, serif !important;
+    font-size: 20pt !important;
+    color: #111111 !important;
+  }
+
+  .post-title a {
+    color: #111111 !important;
+  }
+
+  .post-body {
+    font-family: 'Literata', Georgia, serif !important;
+    font-size: 11pt !important;
+    line-height: 1.68 !important;
+    color: #111111 !important;
+    max-width: 100% !important;
+  }
+
+  .post-body p {
+    text-align: justify;
+    margin-bottom: 10pt !important;
+    orphans: 3;
+    widows: 3;
+  }
+
+  .post-epigraph {
+    background: transparent !important;
+    border-left: 1pt solid #888888 !important;
+    color: #333333 !important;
+  }
+
+  .post-figure {
+    margin: 18pt 0 8pt !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .post-figure img {
+    max-width: 260pt !important;
+    max-height: 240pt !important;
+    box-shadow: none !important;
+    border-radius: 3pt !important;
+  }
+
+  .post-footer {
+    border-top: none !important;
+    padding-top: 8pt !important;
+    margin-top: 12pt !important;
+    justify-content: flex-end !important;
+    color: #444444 !important;
+    font-style: italic;
   }
 }

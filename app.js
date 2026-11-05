@@ -52,6 +52,9 @@
   const footerDraftBtn = document.getElementById('footer-draft-btn');
   const lightbox = document.getElementById('lightbox');
   const lightboxStage = document.getElementById('lightbox-stage');
+  const lightboxTitle = document.getElementById('lightbox-title');
+  const lightboxDate = document.getElementById('lightbox-date');
+  const lightboxDownload = document.getElementById('lightbox-download');
   const lightboxClose = document.getElementById('lightbox-close');
   const metaThemeColor = document.getElementById('meta-theme-color');
 
@@ -167,7 +170,7 @@
         img.src = block.src;
         img.alt = post.title;
         img.loading = 'lazy';
-        img.addEventListener('click', () => openLightbox(block.src, post.title));
+        img.addEventListener('click', () => openLightbox(block.src, post.title, formatLongDate(post.date), post.id));
         fig.appendChild(img);
         body.appendChild(fig);
       } else if (block.type === 'youtube') {
@@ -209,11 +212,27 @@
       }
     });
 
+    const printBtn = document.createElement('button');
+    printBtn.type = 'button';
+    printBtn.className = 'copy-link-btn';
+    printBtn.textContent = 'Imprimir / PDF';
+    printBtn.addEventListener('click', () => {
+      if (activePostId !== post.id) {
+        activePostId = post.id;
+        window.history.replaceState(null, '', `#${post.id}`);
+        renderMain();
+      }
+      setTimeout(() => {
+        window.print();
+      }, 120);
+    });
+
     const perma = document.createElement('a');
     perma.className = 'post-permalink';
     perma.href = `#${post.id}`;
     perma.textContent = isSingleView ? 'Enlace directo' : 'Abrir relato →';
 
+    actions.appendChild(printBtn);
     actions.appendChild(copyBtn);
     actions.appendChild(perma);
     footer.appendChild(authorSpan);
@@ -485,12 +504,19 @@
     }
   }
 
-  function openLightbox(src, alt) {
+  function openLightbox(src, title, formattedDate, slug) {
     lightboxStage.innerHTML = '';
     const img = document.createElement('img');
     img.src = src;
-    img.alt = alt || '';
+    img.alt = title || '';
     lightboxStage.appendChild(img);
+    if (lightboxTitle) lightboxTitle.textContent = title || '';
+    if (lightboxDate) lightboxDate.textContent = formattedDate || '';
+    if (lightboxDownload) {
+      lightboxDownload.href = src;
+      const ext = src.split('.').pop() || 'jpg';
+      lightboxDownload.setAttribute('download', `${slug || 'foto'}.${ext}`);
+    }
     lightbox.hidden = false;
   }
 
