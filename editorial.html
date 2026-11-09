@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light" data-font="serif" data-size="md">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Escribiéndote...</title>
+  <meta name="description" content="Lástima que la perpetuidad sólo dura un rato. Pero ese rato es suficiente." />
+  <meta property="og:title" content="Escribiéndote..." />
+  <meta property="og:description" content="Lástima que la perpetuidad sólo dura un rato. Pero ese rato es suficiente." />
+  <meta property="og:type" content="website" />
+  <meta name="theme-color" content="#1f3a2e" id="meta-theme-color" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" />
+  <link rel="stylesheet" href="styles-editorial.css?v=7" />
+  <script>
+    (function () {
+      try {
+        var savedTheme = localStorage.getItem('escribiendote_theme_editorial');
+        var theme = (savedTheme === 'dark' || savedTheme === 'light') ? savedTheme : 'light';
+        document.documentElement.setAttribute('data-theme', theme);
+        var savedFont = localStorage.getItem('escribiendote_font_editorial');
+        var font = (savedFont === 'sans' || savedFont === 'serif') ? savedFont : 'serif';
+        document.documentElement.setAttribute('data-font', font);
+        var savedSize = localStorage.getItem('escribiendote_size_editorial');
+        if (savedSize === 'sm' || savedSize === 'md' || savedSize === 'lg') {
+          document.documentElement.setAttribute('data-size', savedSize);
+        }
+      } catch (e) {}
+    })();
+  </script>
+</head>
+<body>
+  <div class="reading-progress" id="reading-progress" aria-hidden="true"></div>
+
+  <div class="pagina">
+    <header class="cabecera" role="banner">
+      <div class="marca">
+        <h1 class="marca-titulo">
+          <a href="#" id="home-link">Escribiéndote...</a>
+        </h1>
+        <p class="marca-sub">Lástima que la perpetuidad sólo dura un rato. Pero ese rato es suficiente.</p>
+      </div>
+
+      <div class="cabecera-derecha">
+        <div class="controles-barra">
+          <a href="index.html" class="btn-recto secundario" title="Volver al estilo moderno oscuro/claro">
+            ← Estilo Moderno
+          </a>
+
+          <div class="grupo-recto" role="group" aria-label="Tamaño de texto">
+            <button type="button" class="btn-recto secundario" id="size-down" title="Reducir tamaño de texto" aria-label="Reducir tamaño de texto">A−</button>
+            <button type="button" class="btn-recto secundario" id="size-up" title="Aumentar tamaño de texto" aria-label="Aumentar tamaño de texto">A+</button>
+          </div>
+
+          <button type="button" class="btn-recto secundario" id="font-toggle" title="Alternar cuerpo entre Source Serif 4 e IBM Plex Sans">
+            <span class="font-opt" data-mode="serif">Serif</span>
+            <span class="sep-barra">/</span>
+            <span class="font-opt" data-mode="sans">Sans</span>
+          </button>
+
+          <button type="button" class="btn-recto secundario" id="theme-toggle" aria-label="Cambiar entre papel crema y modo nocturno" title="Alternar Papel crema / Modo nocturno">
+            <span class="label-tema-claro">Papel</span>
+            <span class="label-tema-oscuro">Noche</span>
+          </button>
+
+          <button type="button" class="btn-recto secundario mobile-archive-btn" id="mobile-archive-toggle" aria-expanded="false" aria-controls="archive-aside">
+            Índice
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div class="grilla-editorial">
+      <main class="columna-lectura" id="main-content" role="main">
+        <div id="filter-status" class="barra-filtro" hidden>
+          <span id="filter-status-text"></span>
+          <button type="button" id="clear-filter-btn" class="btn-recto secundario">Ver todos los relatos</button>
+        </div>
+
+        <div id="posts-container" class="flujo-relatos" aria-live="polite"></div>
+
+        <nav id="pagination-nav" class="barra-paginacion" aria-label="Paginación de relatos"></nav>
+      </main>
+
+      <aside class="columna-archivo" id="archive-aside" aria-label="Archivo cronológico">
+        <div class="bloque-lateral">
+          <label for="search-input" class="etiqueta etiqueta-bloque">Buscar en el archivo</label>
+          <div class="campo-busqueda">
+            <input type="search" id="search-input" placeholder="Título, nombre o frase... (/)" autocomplete="off" />
+            <button type="button" id="search-clear" class="limpiar-busqueda" hidden aria-label="Limpiar búsqueda">×</button>
+          </div>
+        </div>
+
+        <div class="bloque-lateral">
+          <div class="encabezado-lateral">
+            <h2 id="archive-heading" class="etiqueta">Índice por año</h2>
+            <span id="total-count-label" class="conteo-lateral"></span>
+          </div>
+          <div id="archive-tree" class="arbol-archivo"></div>
+        </div>
+      </aside>
+    </div>
+
+    <footer class="pie-editorial" role="contentinfo">
+      <div class="pie-interno">
+        <span>Escribiéndote... · Archivo literario y familiar (2007–2026)</span>
+        <span>Publicado por Nacho</span>
+      </div>
+    </footer>
+  </div>
+
+  <button type="button" class="btn-recto volver-arriba" id="back-to-top" hidden aria-label="Volver arriba" title="Volver arriba">
+    ↑ Arriba
+  </button>
+
+  <div id="lightbox" class="modal-editorial" hidden aria-modal="true" role="dialog" aria-label="Fotografía de archivo">
+    <div class="ficha-foto">
+      <div class="ficha-cabecera">
+        <div>
+          <div class="etiqueta">Fotografía de archivo</div>
+          <h3 class="ficha-titulo" id="lightbox-title"></h3>
+        </div>
+        <button type="button" class="btn-recto secundario" id="lightbox-close" aria-label="Cerrar imagen">Cerrar [Esc]</button>
+      </div>
+      <div id="lightbox-stage" class="ficha-imagen"></div>
+      <div class="ficha-pie">
+        <span class="nota" id="lightbox-date"></span>
+        <a id="lightbox-download" class="btn-recto primario" href="#" download>Descargar original</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="posts.js?v=6"></script>
+  <script src="app-editorial.js?v=7"></script>
+</body>
+</html>

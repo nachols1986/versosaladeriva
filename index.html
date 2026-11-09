@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" data-theme="light" data-font="serif" data-size="md">
+<html lang="es" data-theme="dark" data-font="serif" data-size="md">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,22 +8,22 @@
   <meta property="og:title" content="Escribiéndote..." />
   <meta property="og:description" content="Lástima que la perpetuidad sólo dura un rato. Pero ese rato es suficiente." />
   <meta property="og:type" content="website" />
-  <meta name="theme-color" content="#1f3a2e" id="meta-theme-color" />
+  <meta name="theme-color" content="#0F1115" id="meta-theme-color" />
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" />
-  <link rel="stylesheet" href="styles.css?v=7" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,500;0,7..72,600;1,7..72,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css?v=3" />
   <script>
     (function () {
       try {
-        var savedTheme = localStorage.getItem('escribiendote_theme_editorial');
-        var theme = (savedTheme === 'dark' || savedTheme === 'light') ? savedTheme : 'light';
+        var savedTheme = localStorage.getItem('escribiendote_theme_v2');
+        var theme = (savedTheme === 'light' || savedTheme === 'dark') ? savedTheme : 'dark';
         document.documentElement.setAttribute('data-theme', theme);
-        var savedFont = localStorage.getItem('escribiendote_font_editorial');
+        var savedFont = localStorage.getItem('escribiendote_font_v2');
         var font = (savedFont === 'sans' || savedFont === 'serif') ? savedFont : 'serif';
         document.documentElement.setAttribute('data-font', font);
-        var savedSize = localStorage.getItem('escribiendote_size_editorial');
+        var savedSize = localStorage.getItem('escribiendote_size_v2');
         if (savedSize === 'sm' || savedSize === 'md' || savedSize === 'lg') {
           document.documentElement.setAttribute('data-size', savedSize);
         }
@@ -34,101 +34,164 @@
 <body>
   <div class="reading-progress" id="reading-progress" aria-hidden="true"></div>
 
-  <div class="pagina">
-    <header class="cabecera" role="banner">
-      <div class="marca">
-        <h1 class="marca-titulo">
-          <a href="#" id="home-link">Escribiéndote...</a>
-        </h1>
-        <p class="marca-sub">Lástima que la perpetuidad sólo dura un rato. Pero ese rato es suficiente.</p>
-      </div>
+  <header class="topbar" role="banner">
+    <div class="topbar-inner">
+      <a href="#" id="brand-home" class="topbar-brand">
+        <span class="brand-dot" aria-hidden="true"></span>
+        <span class="brand-name">Escribiéndote...</span>
+      </a>
 
-      <div class="cabecera-derecha">
-        <div class="controles-barra">
-          <div class="grupo-recto" role="group" aria-label="Tamaño de texto">
-            <button type="button" class="btn-recto secundario" id="size-down" title="Reducir tamaño de texto" aria-label="Reducir tamaño de texto">A−</button>
-            <button type="button" class="btn-recto secundario" id="size-up" title="Aumentar tamaño de texto" aria-label="Aumentar tamaño de texto">A+</button>
-          </div>
+      <div class="topbar-controls">
+        <a href="editorial.html" class="control-pill" style="text-decoration: none;" title="Probar versión con estilo editorial de diario">
+          <span>Estilo Diario →</span>
+        </a>
 
-          <button type="button" class="btn-recto secundario" id="font-toggle" title="Alternar cuerpo entre Source Serif 4 e IBM Plex Sans">
-            <span class="font-opt" data-mode="serif">Serif</span>
-            <span class="sep-barra">/</span>
-            <span class="font-opt" data-mode="sans">Sans</span>
-          </button>
-
-          <button type="button" class="btn-recto secundario" id="theme-toggle" aria-label="Cambiar entre papel crema y modo nocturno" title="Alternar Papel crema / Modo nocturno">
-            <span class="label-tema-claro">Papel</span>
-            <span class="label-tema-oscuro">Noche</span>
-          </button>
-
-          <button type="button" class="btn-recto secundario mobile-archive-btn" id="mobile-archive-toggle" aria-expanded="false" aria-controls="archive-aside">
-            Índice
-          </button>
+        <div class="size-pill" role="group" aria-label="Tamaño de texto">
+          <button type="button" class="size-step-btn" id="size-down" title="Reducir tamaño de texto" aria-label="Reducir tamaño de texto">A−</button>
+          <span class="font-pill-divider" aria-hidden="true">|</span>
+          <button type="button" class="size-step-btn" id="size-up" title="Aumentar tamaño de texto" aria-label="Aumentar tamaño de texto">A+</button>
         </div>
-      </div>
-    </header>
 
-    <div class="grilla-editorial">
-      <main class="columna-lectura" id="main-content" role="main">
-        <div id="filter-status" class="barra-filtro" hidden>
+        <button type="button" class="control-pill" id="font-toggle" title="Alternar tipografía de lectura (Serif / Sans)">
+          <span class="font-pill-option" data-mode="serif">Serif</span>
+          <span class="font-pill-divider">/</span>
+          <span class="font-pill-option" data-mode="sans">Sans</span>
+        </button>
+
+        <button type="button" class="icon-btn" id="theme-toggle" aria-label="Cambiar entre modo oscuro y claro" title="Cambiar tema (Oscuro / Claro)">
+          <svg class="icon-sun" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <svg class="icon-moon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </button>
+
+        <button type="button" class="mobile-archive-btn" id="mobile-archive-toggle" aria-expanded="false" aria-controls="archive-aside">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="4" y1="7" x2="20" y2="7"></line>
+            <line x1="4" y1="12" x2="15" y2="12"></line>
+            <line x1="4" y1="17" x2="18" y2="17"></line>
+          </svg>
+          <span>Índice</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="page-frame">
+    <section class="hero-header" id="hero-header">
+      <h1 class="site-title">
+        <a href="#" id="home-link">Escribiéndote...</a>
+      </h1>
+      <p class="site-epigraph">Lástima que la perpetuidad sólo dura un rato. Pero ese rato es suficiente.</p>
+    </section>
+
+    <div class="layout-grid">
+      <main class="reading-column" id="main-content" role="main">
+        <div id="filter-status" class="filter-banner" hidden>
           <span id="filter-status-text"></span>
-          <button type="button" id="clear-filter-btn" class="btn-recto secundario">Ver todos los relatos</button>
+          <button type="button" id="clear-filter-btn" class="text-action">Ver todos los relatos</button>
         </div>
 
-        <div id="posts-container" class="flujo-relatos" aria-live="polite"></div>
+        <div id="posts-container" class="posts-stream" aria-live="polite"></div>
 
-        <nav id="pagination-nav" class="barra-paginacion" aria-label="Paginación de relatos"></nav>
+        <nav id="pagination-nav" class="pagination-bar" aria-label="Paginación de relatos"></nav>
       </main>
 
-      <aside class="columna-archivo" id="archive-aside" aria-label="Archivo cronológico">
-        <div class="bloque-lateral">
-          <label for="search-input" class="etiqueta etiqueta-bloque">Buscar en el archivo</label>
-          <div class="campo-busqueda">
-            <input type="search" id="search-input" placeholder="Título, nombre o frase... (/)" autocomplete="off" />
-            <button type="button" id="search-clear" class="limpiar-busqueda" hidden aria-label="Limpiar búsqueda">×</button>
+      <aside class="archive-rail" id="archive-aside" aria-label="Archivo del blog">
+        <div class="archive-rail-inner">
+          <div class="search-box">
+            <label for="search-input" class="sr-only">Buscar en los relatos</label>
+            <svg class="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="search" id="search-input" placeholder="Buscar relato o frase..." autocomplete="off" />
+            <kbd class="search-kbd" id="search-kbd" aria-hidden="true">/</kbd>
+            <button type="button" id="search-clear" class="search-clear-btn" hidden aria-label="Limpiar búsqueda">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
           </div>
-        </div>
 
-        <div class="bloque-lateral">
-          <div class="encabezado-lateral">
-            <h2 id="archive-heading" class="etiqueta">Índice por año</h2>
-            <span id="total-count-label" class="conteo-lateral"></span>
-          </div>
-          <div id="archive-tree" class="arbol-archivo"></div>
+          <section class="rail-section" aria-labelledby="archive-heading">
+            <div class="rail-header-row">
+              <h2 id="archive-heading" class="rail-heading">Archivo cronológico</h2>
+              <span id="total-count-label" class="rail-count"></span>
+            </div>
+            <div id="archive-tree" class="archive-tree"></div>
+          </section>
+
+          <section class="rail-section rail-colophon">
+            <div class="colophon-row">
+              <span class="author-signature">Por <strong>Nacho</strong></span>
+              <span class="colophon-years">2007—2026</span>
+            </div>
+            <div class="draft-preview-control" id="draft-control-box" hidden>
+              <label class="draft-toggle-label">
+                <input type="checkbox" id="toggle-drafts-checkbox" />
+                <span>Incluir borrador (<em>Clara</em>)</span>
+              </label>
+            </div>
+          </section>
         </div>
       </aside>
     </div>
 
-    <footer class="pie-editorial" role="contentinfo">
-      <div class="pie-interno">
-        <span>Escribiéndote... · Archivo literario y familiar (2007–2026)</span>
-        <span>Publicado por Nacho</span>
+    <footer class="site-footer" role="contentinfo">
+      <div class="footer-inner">
+        <p class="footer-quote">Escribiéndote... · 2007–2026</p>
+        <button type="button" class="footer-draft-trigger" id="footer-draft-btn" hidden title="Alternar vista previa de borradores">
+          Vista de borradores
+        </button>
       </div>
     </footer>
   </div>
 
-  <button type="button" class="btn-recto volver-arriba" id="back-to-top" hidden aria-label="Volver arriba" title="Volver arriba">
-    ↑ Arriba
+  <button type="button" class="back-to-top" id="back-to-top" hidden aria-label="Volver arriba" title="Volver arriba">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <polyline points="18 15 12 9 6 15"></polyline>
+    </svg>
   </button>
 
-  <div id="lightbox" class="modal-editorial" hidden aria-modal="true" role="dialog" aria-label="Fotografía de archivo">
-    <div class="ficha-foto">
-      <div class="ficha-cabecera">
-        <div>
-          <div class="etiqueta">Fotografía de archivo</div>
-          <h3 class="ficha-titulo" id="lightbox-title"></h3>
+  <div id="lightbox" class="lightbox" hidden aria-modal="true" role="dialog" aria-label="Imagen ampliada">
+    <button type="button" class="lightbox-close" id="lightbox-close" aria-label="Cerrar imagen">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+    <div class="lightbox-content">
+      <div id="lightbox-stage" class="lightbox-stage"></div>
+      <div class="lightbox-bar">
+        <div class="lightbox-caption">
+          <strong id="lightbox-title"></strong>
+          <span id="lightbox-date"></span>
         </div>
-        <button type="button" class="btn-recto secundario" id="lightbox-close" aria-label="Cerrar imagen">Cerrar [Esc]</button>
-      </div>
-      <div id="lightbox-stage" class="ficha-imagen"></div>
-      <div class="ficha-pie">
-        <span class="nota" id="lightbox-date"></span>
-        <a id="lightbox-download" class="btn-recto primario" href="#" download>Descargar original</a>
+        <a id="lightbox-download" class="lightbox-download-btn" href="#" download>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          <span>Descargar foto</span>
+        </a>
       </div>
     </div>
   </div>
 
-  <script src="posts.js?v=6"></script>
-  <script src="app.js?v=6"></script>
+  <script src="posts.js?v=4"></script>
+  <script src="app.js?v=4"></script>
 </body>
 </html>
