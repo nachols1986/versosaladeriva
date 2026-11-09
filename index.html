@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" />
-  <link rel="stylesheet" href="styles.css?v=5" />
+  <link rel="stylesheet" href="styles.css?v=6" />
   <script>
     (function () {
       try {
@@ -44,11 +44,6 @@
       </div>
 
       <div class="cabecera-derecha">
-        <nav class="pestanas" aria-label="Vistas del archivo">
-          <a href="#" class="pestana activa" id="tab-all" data-filter="all">Cronología completa</a>
-          <a href="#cartas" class="pestana" id="tab-letters" data-filter="letters">Cartas de 1 año</a>
-        </nav>
-
         <div class="controles-barra">
           <div class="grupo-recto" role="group" aria-label="Tamaño de texto">
             <button type="button" class="btn-recto secundario" id="size-down" title="Reducir tamaño de texto" aria-label="Reducir tamaño de texto">A−</button>
@@ -72,29 +67,6 @@
         </div>
       </div>
     </header>
-
-    <section class="indicadores" aria-label="Resumen del archivo">
-      <div class="tarjeta">
-        <div class="etiqueta">Relatos en archivo</div>
-        <div class="numero" id="kpi-total">72</div>
-        <div class="detalle">Noviembre 2007 — Presente</div>
-      </div>
-      <div class="tarjeta">
-        <div class="etiqueta">Cartas de primer año</div>
-        <div class="numero">8</div>
-        <div class="detalle">Clara, Josefina y 6 sobrinos</div>
-      </div>
-      <div class="tarjeta">
-        <div class="etiqueta">Fotografías preservadas</div>
-        <div class="numero">45</div>
-        <div class="detalle">Archivo local original (incluso Goyito en 22 de Enero)</div>
-      </div>
-      <div class="tarjeta">
-        <div class="etiqueta">Autor</div>
-        <div class="numero numero-texto">Nacho</div>
-        <div class="detalle">Diecinueve años de crónicas y cartas</div>
-      </div>
-    </section>
 
     <div class="grilla-editorial">
       <main class="columna-lectura" id="main-content" role="main">
@@ -123,15 +95,6 @@
             <span id="total-count-label" class="conteo-lateral"></span>
           </div>
           <div id="archive-tree" class="arbol-archivo"></div>
-        </div>
-
-        <div class="bloque-lateral colofon-lateral">
-          <div class="etiqueta">Referencia de categorías</div>
-          <div class="leyenda-chips">
-            <span class="chip chip-a">Carta familiar (1 año)</span>
-            <span class="chip chip-b">Con fotografía</span>
-            <span class="chip chip-c">Relato / Poesía</span>
-          </div>
         </div>
       </aside>
     </div>
@@ -165,7 +128,7 @@
     </div>
   </div>
 
-  <script src="posts.js?v=5"></script>
-  <script src="app.js?v=5"></script>
+  <script src="posts.js?v=6"></script>
+  <script src="app.js?v=6"></script>
 </body>
 </html>

@@ -154,7 +154,8 @@ a {
   gap: 0.75rem 2rem;
   align-items: flex-end;
   justify-content: space-between;
-  padding: 1.35rem 0 0.85rem;
+  padding: 1.5rem 0 1.1rem;
+  margin-bottom: 2.25rem;
   border-bottom: 1px solid var(--verde);
 }
 
@@ -507,34 +508,20 @@ html[data-theme="dark"] .label-tema-claro {
   color: var(--tinta-2);
 }
 
-/* Fotografías enmarcadas con línea fina de 1px, sin sombra ni radio */
+/* Fotografías limpias y centradas, sin recuadro sobrante */
 .post-figure {
   margin: 2rem 0 1rem;
   text-align: center;
 }
 
-.post-figure-frame {
-  display: inline-block;
-  padding: 0.45rem;
-  background: var(--papel-input);
-  border: 1px solid var(--linea);
-}
-
 .post-figure img {
-  display: block;
-  max-width: min(100%, 420px);
+  display: inline-block;
+  max-width: min(100%, 400px);
   height: auto;
+  border: 1px solid var(--linea);
   border-radius: 0;
   box-shadow: none;
   cursor: zoom-in;
-}
-
-.post-figure-caption {
-  margin-top: 0.4rem;
-  font-family: var(--sans);
-  font-size: 0.72rem;
-  color: var(--tinta-2);
-  text-align: right;
 }
 
 .video-embed {

@@ -134,28 +134,8 @@
     const stats = countWordsAndChars(post.blocks);
     const readTime = document.createElement('span');
     readTime.className = 'post-reading-time';
-    readTime.textContent = `${stats.words.toLocaleString('es-AR')} palabras · ${stats.mins} min`;
+    readTime.textContent = `· ${stats.mins} min de lectura`;
     metaTop.appendChild(readTime);
-
-    const isLetter = FAMILY_LETTER_IDS.has(post.id);
-    const hasPhoto = post.blocks.some((b) => b.type === 'image');
-
-    const chipType = document.createElement('span');
-    if (isLetter) {
-      chipType.className = 'chip chip-a';
-      chipType.textContent = 'Carta 1 año';
-    } else {
-      chipType.className = 'chip chip-c';
-      chipType.textContent = 'Relato';
-    }
-    metaTop.appendChild(chipType);
-
-    if (hasPhoto) {
-      const chipPhoto = document.createElement('span');
-      chipPhoto.className = 'chip chip-b';
-      chipPhoto.textContent = 'Foto';
-      metaTop.appendChild(chipPhoto);
-    }
 
     const headerActions = document.createElement('div');
     headerActions.className = 'post-header-actions';
@@ -208,19 +188,12 @@
       } else if (block.type === 'image') {
         const fig = document.createElement('figure');
         fig.className = 'post-figure';
-        const frame = document.createElement('div');
-        frame.className = 'post-figure-frame';
         const img = document.createElement('img');
         img.src = block.src;
         img.alt = post.title;
         img.loading = 'lazy';
         img.addEventListener('click', () => openLightbox(block.src, post.title, formatLongDate(post.date), post.id));
-        const cap = document.createElement('div');
-        cap.className = 'post-figure-caption';
-        cap.textContent = `${post.title} · Clic para ampliar`;
-        frame.appendChild(img);
-        frame.appendChild(cap);
-        fig.appendChild(frame);
+        fig.appendChild(img);
         body.appendChild(fig);
       } else if (block.type === 'youtube') {
         const wrap = document.createElement('div');
@@ -240,7 +213,7 @@
     const footer = document.createElement('footer');
     footer.className = 'post-footer';
     const authorSpan = document.createElement('span');
-    authorSpan.textContent = `Publicado por Nacho · ${stats.chars.toLocaleString('es-AR')} caracteres`;
+    authorSpan.textContent = 'Publicado por Nacho';
 
     const actions = document.createElement('div');
     actions.className = 'post-footer-actions';
