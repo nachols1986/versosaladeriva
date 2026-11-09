@@ -15,30 +15,41 @@
     'domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'
   ];
 
+  const FAMILY_LETTER_IDS = new Set([
+    'clara',
+    'josefina',
+    'lucia',
+    'francisco',
+    'santiago',
+    'sebastian',
+    'juan-martin',
+    'emilia'
+  ]);
+
   const SIZES = ['sm', 'md', 'lg'];
   const POSTS_PER_PAGE = 8;
 
   const allPosts = Array.isArray(window.BLOG_POSTS) ? window.BLOG_POSTS : [];
 
-  const urlParams = new URLSearchParams(window.location.search);
-  let showDrafts = urlParams.get('drafts') === '1';
   let currentPage = 1;
   let activeYear = null;
   let activePostId = null;
+  let activeCategory = 'all'; // 'all' | 'letters'
   let searchQuery = '';
 
   const postsContainer = document.getElementById('posts-container');
   const paginationNav = document.getElementById('pagination-nav');
   const archiveTree = document.getElementById('archive-tree');
   const totalCountLabel = document.getElementById('total-count-label');
+  const kpiTotal = document.getElementById('kpi-total');
   const filterStatus = document.getElementById('filter-status');
   const filterStatusText = document.getElementById('filter-status-text');
   const clearFilterBtn = document.getElementById('clear-filter-btn');
   const searchInput = document.getElementById('search-input');
-  const searchKbd = document.getElementById('search-kbd');
   const searchClearBtn = document.getElementById('search-clear');
   const homeLink = document.getElementById('home-link');
-  const brandHome = document.getElementById('brand-home');
+  const tabAll = document.getElementById('tab-all');
+  const tabLetters = document.getElementById('tab-letters');
   const themeToggle = document.getElementById('theme-toggle');
   const fontToggle = document.getElementById('font-toggle');
   const sizeDownBtn = document.getElementById('size-down');
@@ -47,9 +58,6 @@
   const backToTopBtn = document.getElementById('back-to-top');
   const mobileArchiveToggle = document.getElementById('mobile-archive-toggle');
   const archiveAside = document.getElementById('archive-aside');
-  const draftControlBox = document.getElementById('draft-control-box');
-  const toggleDraftsCheckbox = document.getElementById('toggle-drafts-checkbox');
-  const footerDraftBtn = document.getElementById('footer-draft-btn');
   const lightbox = document.getElementById('lightbox');
   const lightboxStage = document.getElementById('lightbox-stage');
   const lightboxTitle = document.getElementById('lightbox-title');
@@ -81,19 +89,22 @@
     return `${String(parts[2]).padStart(2, '0')} ${MONTHS_SHORT[parts[1] - 1]}`;
   }
 
-  function estimateReadingMinutes(blocks) {
+  function countWordsAndChars(blocks) {
     let words = 0;
+    let chars = 0;
     blocks.forEach((b) => {
       if (b.text) {
-        words += b.text.trim().split(/\s+/).length;
+        const clean = b.text.trim();
+        chars += clean.length;
+        words += clean.split(/\s+/).length;
       }
     });
     const mins = Math.max(1, Math.round(words / 210));
-    return `${mins} min de lectura`;
+    return { words, chars, mins };
   }
 
   function getVisiblePosts() {
-    return allPosts.filter((p) => showDrafts || !p.draft);
+    return allPosts.filter((p) => !p.draft);
   }
 
   function isPoemLike(blocks) {
@@ -120,38 +131,20 @@
     timeEl.textContent = formatLongDate(post.date);
     metaTop.appendChild(timeEl);
 
-    const sep = document.createElement('span');
-    sep.className = 'meta-sep';
-    sep.textContent = '·';
-    metaTop.appendChild(sep);
-
+    const stats = countWordsAndChars(post.blocks);
     const readTime = document.createElement('span');
     readTime.className = 'post-reading-time';
-    readTime.textContent = estimateReadingMinutes(post.blocks);
+    readTime.textContent = `· ${stats.mins} min de lectura`;
     metaTop.appendChild(readTime);
-
-    if (post.draft) {
-      const badge = document.createElement('span');
-      badge.className = 'draft-badge';
-      badge.textContent = 'Borrador';
-      metaTop.appendChild(badge);
-    }
 
     const headerActions = document.createElement('div');
     headerActions.className = 'post-header-actions';
 
     const topPrintBtn = document.createElement('button');
     topPrintBtn.type = 'button';
-    topPrintBtn.className = 'post-action-pill';
+    topPrintBtn.className = 'btn-recto secundario';
     topPrintBtn.title = 'Imprimir o guardar este relato como PDF';
-    topPrintBtn.innerHTML = `
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <polyline points="6 9 6 2 18 2 18 9"></polyline>
-        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
-        <rect x="6" y="14" width="12" height="8"></rect>
-      </svg>
-      <span>Imprimir / PDF</span>
-    `;
+    topPrintBtn.textContent = 'Imprimir / PDF';
     topPrintBtn.addEventListener('click', () => {
       if (activePostId !== post.id) {
         activePostId = post.id;
@@ -227,10 +220,10 @@
 
     const copyBtn = document.createElement('button');
     copyBtn.type = 'button';
-    copyBtn.className = 'copy-link-btn';
+    copyBtn.className = 'btn-recto secundario';
     copyBtn.textContent = 'Copiar enlace';
     copyBtn.addEventListener('click', () => {
-      const shareUrl = `${window.location.origin}${window.location.pathname}${post.draft ? '?drafts=1' : ''}#${post.id}`;
+      const shareUrl = `${window.location.origin}${window.location.pathname}#${post.id}`;
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(shareUrl).then(() => {
           copyBtn.textContent = '¡Enlace copiado!';
@@ -241,27 +234,11 @@
       }
     });
 
-    const printBtn = document.createElement('button');
-    printBtn.type = 'button';
-    printBtn.className = 'copy-link-btn';
-    printBtn.textContent = 'Imprimir / PDF';
-    printBtn.addEventListener('click', () => {
-      if (activePostId !== post.id) {
-        activePostId = post.id;
-        window.history.replaceState(null, '', `#${post.id}`);
-        renderMain();
-      }
-      setTimeout(() => {
-        window.print();
-      }, 120);
-    });
-
     const perma = document.createElement('a');
-    perma.className = 'post-permalink';
+    perma.className = 'btn-recto secundario';
     perma.href = `#${post.id}`;
-    perma.textContent = isSingleView ? 'Enlace directo' : 'Abrir relato →';
+    perma.textContent = isSingleView ? 'Enlace permanente' : 'Ficha individual →';
 
-    actions.appendChild(printBtn);
     actions.appendChild(copyBtn);
     actions.appendChild(perma);
     footer.appendChild(authorSpan);
@@ -318,6 +295,7 @@
   function renderArchive(visiblePosts) {
     archiveTree.innerHTML = '';
     totalCountLabel.textContent = `${visiblePosts.length} textos`;
+    if (kpiTotal) kpiTotal.textContent = String(visiblePosts.length);
 
     const byYear = new Map();
     visiblePosts.forEach((post) => {
@@ -335,7 +313,7 @@
       const shouldOpen =
         activeYear === year ||
         (activePostId && postsInYear.some((p) => p.id === activePostId)) ||
-        (!activeYear && !activePostId && index < 3);
+        (!activeYear && !activePostId && index < 4);
 
       if (shouldOpen) group.classList.add('open');
 
@@ -343,12 +321,7 @@
       btn.type = 'button';
       btn.className = 'year-toggle';
       btn.innerHTML = `
-        <span class="year-toggle-left">
-          <svg class="year-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <polyline points="9 18 15 12 9 6"></polyline>
-          </svg>
-          <span>${year}</span>
-        </span>
+        <span>${year}</span>
         <span class="year-count">${postsInYear.length}</span>
       `;
 
@@ -360,6 +333,8 @@
           group.classList.add('open');
           activeYear = year;
           activePostId = null;
+          activeCategory = 'all';
+          syncTabs();
           currentPage = 1;
           window.history.replaceState(null, '', `#year-${year}`);
           withTransition(renderMain);
@@ -377,7 +352,7 @@
         a.href = `#${p.id}`;
 
         const titleSpan = document.createElement('span');
-        titleSpan.textContent = p.title + (p.draft ? ' (borrador)' : '');
+        titleSpan.textContent = p.title;
 
         const daySpan = document.createElement('span');
         daySpan.className = 'year-post-day';
@@ -395,9 +370,17 @@
     });
   }
 
+  function syncTabs() {
+    if (tabAll && tabLetters) {
+      tabAll.classList.toggle('activa', activeCategory === 'all' && !activeYear && !activePostId);
+      tabLetters.classList.toggle('activa', activeCategory === 'letters');
+    }
+  }
+
   function renderMain() {
     const visiblePosts = getVisiblePosts();
     renderArchive(visiblePosts);
+    syncTabs();
 
     postsContainer.innerHTML = '';
     paginationNav.innerHTML = '';
@@ -405,16 +388,10 @@
     if (activePostId) {
       const target = visiblePosts.find((p) => p.id === activePostId) || allPosts.find((p) => p.id === activePostId);
       if (target) {
-        if (target.draft && !showDrafts) {
-          showDrafts = true;
-          draftControlBox.hidden = false;
-          toggleDraftsCheckbox.checked = true;
-          renderArchive(getVisiblePosts());
-        }
         document.title = `${target.title} · Escribiéndote...`;
         filterStatus.hidden = false;
-        filterStatusText.textContent = `Viendo relato individual · ${formatLongDate(target.date)}`;
-        postsContainer.appendChild(renderPostHTML(target, true, getVisiblePosts()));
+        filterStatusText.textContent = `Ficha individual · ${target.title} (${formatLongDate(target.date)})`;
+        postsContainer.appendChild(renderPostHTML(target, true, visiblePosts));
         updateReadingProgress();
         return;
       }
@@ -430,11 +407,15 @@
         return p.blocks.some((b) => b.text && b.text.toLowerCase().includes(q));
       });
       filterStatus.hidden = false;
-      filterStatusText.textContent = `Resultados para “${searchQuery.trim()}” (${filtered.length})`;
+      filterStatusText.textContent = `Filtro de búsqueda: “${searchQuery.trim()}” (${filtered.length} relatos)`;
+    } else if (activeCategory === 'letters') {
+      filtered = visiblePosts.filter((p) => FAMILY_LETTER_IDS.has(p.id));
+      filterStatus.hidden = false;
+      filterStatusText.textContent = `Cartas de primer año: hijas y sobrinos (${filtered.length} cartas)`;
     } else if (activeYear) {
       filtered = visiblePosts.filter((p) => p.date.startsWith(activeYear));
       filterStatus.hidden = false;
-      filterStatusText.textContent = `Relatos publicados en ${activeYear} (${filtered.length})`;
+      filterStatusText.textContent = `Archivo del año ${activeYear} (${filtered.length} relatos)`;
     } else {
       filterStatus.hidden = true;
     }
@@ -445,7 +426,7 @@
       empty.innerHTML = `<p>No se encontraron relatos con ese criterio.</p>`;
       const resetBtn = document.createElement('button');
       resetBtn.type = 'button';
-      resetBtn.className = 'text-action';
+      resetBtn.className = 'btn-recto secundario';
       resetBtn.textContent = 'Mostrar todos los relatos';
       resetBtn.addEventListener('click', resetFilters);
       empty.appendChild(resetBtn);
@@ -465,7 +446,7 @@
     if (totalPages > 1) {
       const prevBtn = document.createElement('button');
       prevBtn.type = 'button';
-      prevBtn.className = 'page-btn';
+      prevBtn.className = 'btn-recto secundario';
       prevBtn.disabled = currentPage === 1;
       prevBtn.textContent = '← Más recientes';
       prevBtn.addEventListener('click', () => {
@@ -480,7 +461,7 @@
 
       const nextBtn = document.createElement('button');
       nextBtn.type = 'button';
-      nextBtn.className = 'page-btn';
+      nextBtn.className = 'btn-recto secundario';
       nextBtn.disabled = currentPage === totalPages;
       nextBtn.textContent = 'Anteriores →';
       nextBtn.addEventListener('click', () => {
@@ -500,10 +481,10 @@
   function resetFilters() {
     activeYear = null;
     activePostId = null;
+    activeCategory = 'all';
     searchQuery = '';
     searchInput.value = '';
     searchClearBtn.hidden = true;
-    if (searchKbd) searchKbd.hidden = false;
     currentPage = 1;
     window.history.replaceState(null, '', window.location.pathname + window.location.search);
     withTransition(renderMain);
@@ -514,12 +495,22 @@
     if (!rawHash) {
       activePostId = null;
       activeYear = null;
+      activeCategory = 'all';
+      renderMain();
+      return;
+    }
+    if (rawHash === 'cartas') {
+      activeCategory = 'letters';
+      activePostId = null;
+      activeYear = null;
+      currentPage = 1;
       renderMain();
       return;
     }
     if (rawHash.startsWith('year-')) {
       activeYear = rawHash.slice(5);
       activePostId = null;
+      activeCategory = 'all';
       currentPage = 1;
       renderMain();
       return;
@@ -528,6 +519,7 @@
     if (found) {
       activePostId = found.id;
       activeYear = null;
+      activeCategory = 'all';
       withTransition(renderMain);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -582,22 +574,36 @@
     resetFilters();
   });
 
-  brandHome.addEventListener('click', (e) => {
-    e.preventDefault();
-    resetFilters();
-  });
+  if (tabAll) {
+    tabAll.addEventListener('click', (e) => {
+      e.preventDefault();
+      resetFilters();
+    });
+  }
+
+  if (tabLetters) {
+    tabLetters.addEventListener('click', (e) => {
+      e.preventDefault();
+      activeCategory = 'letters';
+      activePostId = null;
+      activeYear = null;
+      currentPage = 1;
+      window.history.replaceState(null, '', '#cartas');
+      withTransition(renderMain);
+    });
+  }
 
   clearFilterBtn.addEventListener('click', resetFilters);
 
   themeToggle.addEventListener('click', () => {
-    const current = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+    const current = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
     const next = current === 'dark' ? 'light' : 'dark';
     document.documentElement.setAttribute('data-theme', next);
     if (metaThemeColor) {
-      metaThemeColor.setAttribute('content', next === 'dark' ? '#0F1115' : '#F5F6F8');
+      metaThemeColor.setAttribute('content', next === 'dark' ? '#111815' : '#1f3a2e');
     }
     try {
-      localStorage.setItem('escribiendote_theme_v2', next);
+      localStorage.setItem('escribiendote_theme_editorial', next);
     } catch (e) {}
   });
 
@@ -606,7 +612,7 @@
     const next = current === 'sans' ? 'serif' : 'sans';
     document.documentElement.setAttribute('data-font', next);
     try {
-      localStorage.setItem('escribiendote_font_v2', next);
+      localStorage.setItem('escribiendote_font_editorial', next);
     } catch (e) {}
   });
 
@@ -618,7 +624,7 @@
         const next = SIZES[idx - 1];
         document.documentElement.setAttribute('data-size', next);
         syncSizeButtons();
-        try { localStorage.setItem('escribiendote_size_v2', next); } catch (e) {}
+        try { localStorage.setItem('escribiendote_size_editorial', next); } catch (e) {}
       }
     });
     sizeUpBtn.addEventListener('click', () => {
@@ -628,7 +634,7 @@
         const next = SIZES[idx + 1];
         document.documentElement.setAttribute('data-size', next);
         syncSizeButtons();
-        try { localStorage.setItem('escribiendote_size_v2', next); } catch (e) {}
+        try { localStorage.setItem('escribiendote_size_editorial', next); } catch (e) {}
       }
     });
     syncSizeButtons();
@@ -643,7 +649,6 @@
   searchInput.addEventListener('input', (e) => {
     searchQuery = e.target.value;
     searchClearBtn.hidden = !searchQuery;
-    if (searchKbd) searchKbd.hidden = Boolean(searchQuery);
     activePostId = null;
     currentPage = 1;
     renderMain();
@@ -653,7 +658,6 @@
     searchQuery = '';
     searchInput.value = '';
     searchClearBtn.hidden = true;
-    if (searchKbd) searchKbd.hidden = false;
     currentPage = 1;
     renderMain();
   });
@@ -682,38 +686,10 @@
     mobileArchiveToggle.setAttribute('aria-expanded', String(isOpen));
   });
 
-  footerDraftBtn.addEventListener('click', () => {
-    showDrafts = !showDrafts;
-    draftControlBox.hidden = false;
-    toggleDraftsCheckbox.checked = showDrafts;
-    if (showDrafts) {
-      activePostId = 'clara';
-      window.location.hash = 'clara';
-    } else if (activePostId === 'clara') {
-      resetFilters();
-    } else {
-      renderMain();
-    }
-  });
-
-  toggleDraftsCheckbox.addEventListener('change', (e) => {
-    showDrafts = e.target.checked;
-    if (!showDrafts && activePostId === 'clara') {
-      resetFilters();
-    } else {
-      renderMain();
-    }
-  });
-
   lightboxClose.addEventListener('click', closeLightbox);
   lightbox.addEventListener('click', (e) => {
     if (e.target === lightbox) closeLightbox();
   });
-
-  if (showDrafts) {
-    draftControlBox.hidden = false;
-    toggleDraftsCheckbox.checked = true;
-  }
 
   syncFromHash();
 })();
