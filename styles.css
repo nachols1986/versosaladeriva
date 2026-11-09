@@ -404,6 +404,10 @@ html[data-theme="dark"] .label-tema-claro {
   color: var(--tinta);
 }
 
+.barra-filtro[hidden] {
+  display: none !important;
+}
+
 /* Bloques de relatos: sin cajas, sin sombras, sin radios */
 .post-article {
   border-top: 1px solid var(--linea);
