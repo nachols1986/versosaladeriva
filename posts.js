@@ -2,8 +2,8 @@ window.BLOG_POSTS = [
   {
     "id": "clara",
     "title": "Clara",
-    "date": "2026-11-04",
-    "timestamp": "2026-11-04T12:00:00Z",
+    "date": "2026-11-14",
+    "timestamp": "2026-11-14T12:00:00Z",
     "bloggerPath": "/2026/11/clara.html",
     "draft": false,
     "blocks": [
