@@ -301,9 +301,34 @@ html[data-theme="dark"] .icon-sun {
 
 /* Editorial Hero Header */
 .hero-header {
-  padding: 3.5rem 0 2.75rem;
+  padding: 2.25rem 0 2.5rem;
   border-bottom: 1px solid var(--rule);
   margin-bottom: 3rem;
+}
+
+.modern-cintillo {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding-bottom: 0.85rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--rule);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  color: var(--ink-muted);
+}
+
+.modern-hero-row {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.modern-exlibris {
+  color: var(--ink-primary);
+  flex-shrink: 0;
 }
 
 .site-title {

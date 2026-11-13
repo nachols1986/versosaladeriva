@@ -147,29 +147,60 @@ a {
   margin: 0 auto;
 }
 
-/* Cabecera estilo diario */
+/* Cabecera estilo diario (Cintillo + Ex-libris + Doble filete) */
 .cabecera {
+  padding: 0.85rem 0 1.25rem;
+  margin-bottom: 2.25rem;
+  border-bottom: 4px double var(--verde);
+}
+
+.cintillo-edicion {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding-bottom: 0.55rem;
+  margin-bottom: 1.15rem;
+  border-bottom: 1px solid var(--linea);
+  font-family: var(--sans);
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--tinta-2);
+}
+
+.cintillo-centro {
+  font-family: var(--mono);
+  color: var(--verde);
+}
+
+.cabecera-cuerpo {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem 2rem;
   align-items: flex-end;
   justify-content: space-between;
-  padding: 1.5rem 0 1.1rem;
-  margin-bottom: 2.25rem;
-  border-bottom: 1px solid var(--verde);
 }
 
-.marca {
+.marca-con-vineta {
   display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
+  align-items: center;
+  gap: 1.1rem;
+}
+
+.vineta-exlibris {
+  display: block;
+  color: var(--verde);
+  flex-shrink: 0;
 }
 
 .marca-titulo {
-  font-size: 2rem;
+  font-size: 2.45rem;
   line-height: 1.05;
   margin: 0;
-  letter-spacing: -0.015em;
+  letter-spacing: -0.02em;
 }
 
 .marca-titulo a {

@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" />
-  <link rel="stylesheet" href="styles.css?v=9" />
+  <link rel="stylesheet" href="styles.css?v=11" />
   <script>
     (function () {
       try {
@@ -35,39 +35,59 @@
   <div class="reading-progress" id="reading-progress" aria-hidden="true"></div>
 
   <div class="pagina">
-    <header class="cabecera" role="banner">
-      <div class="marca">
-        <h1 class="marca-titulo">
-          <a href="#" id="home-link">Escribiéndote...</a>
-        </h1>
-        <p class="marca-sub">Lástima que la perpetuidad sólo dura un rato. Pero ese rato es suficiente.</p>
+    <header class="cabecera" id="main-cabecera" role="banner">
+      <div class="cintillo-edicion">
+        <span>CRÓNICAS, CARTAS Y RELATOS · BUENOS AIRES</span>
+        <span class="cintillo-centro">VOL. I — XIX (2007—2026)</span>
+        <span>PUBLICADO POR NACHO · 72 TEXTOS</span>
       </div>
 
-      <div class="cabecera-derecha">
-        <div class="controles-barra">
-          <a href="moderno.html" class="btn-recto secundario" title="Volver al estilo moderno oscuro/claro">
-            Estilo Moderno →
-          </a>
-
-          <div class="grupo-recto" role="group" aria-label="Tamaño de texto">
-            <button type="button" class="btn-recto secundario" id="size-down" title="Reducir tamaño de texto" aria-label="Reducir tamaño de texto">A−</button>
-            <button type="button" class="btn-recto secundario" id="size-up" title="Aumentar tamaño de texto" aria-label="Aumentar tamaño de texto">A+</button>
+      <div class="cabecera-cuerpo">
+        <div class="marca-con-vineta">
+          <div class="vineta-exlibris" aria-hidden="true">
+            <svg viewBox="0 0 76 76" width="62" height="62" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="2" y="2" width="72" height="72" stroke="currentColor" stroke-width="1.2"/>
+              <rect x="6" y="6" width="64" height="64" stroke="currentColor" stroke-width="0.6"/>
+              <!-- Árbol / ramas de invierno en grabado lineal (guiño al header original del blog) + pluma -->
+              <path d="M38 66V38M38 48L24 34M38 42L54 26M38 38L29 21M38 38L46 18M24 34L15 28M24 34L21 22M54 26L62 21M54 26L56 16M29 21L22 13M46 18L51 11" stroke="currentColor" stroke-width="1.15" stroke-linecap="round"/>
+              <circle cx="56" cy="54" r="3.5" fill="var(--acento-2)" stroke="currentColor" stroke-width="0.8"/>
+            </svg>
           </div>
 
-          <button type="button" class="btn-recto secundario" id="font-toggle" title="Alternar cuerpo entre Source Serif 4 e IBM Plex Sans">
-            <span class="font-opt" data-mode="serif">Serif</span>
-            <span class="sep-barra">/</span>
-            <span class="font-opt" data-mode="sans">Sans</span>
-          </button>
+          <div class="marca">
+            <h1 class="marca-titulo">
+              <a href="#" id="home-link">Escribiéndote...</a>
+            </h1>
+            <p class="marca-sub">Lástima que la perpetuidad sólo dura un rato. Pero ese rato es suficiente.</p>
+          </div>
+        </div>
 
-          <button type="button" class="btn-recto secundario" id="theme-toggle" aria-label="Cambiar entre papel crema y modo nocturno" title="Alternar Papel crema / Modo nocturno">
-            <span class="label-tema-claro">Papel</span>
-            <span class="label-tema-oscuro">Noche</span>
-          </button>
+        <div class="cabecera-derecha">
+          <div class="controles-barra">
+            <a href="moderno.html" class="btn-recto secundario" title="Volver al estilo moderno oscuro/claro">
+              Estilo Moderno →
+            </a>
 
-          <button type="button" class="btn-recto secundario mobile-archive-btn" id="mobile-archive-toggle" aria-expanded="false" aria-controls="archive-aside">
-            Índice
-          </button>
+            <div class="grupo-recto" role="group" aria-label="Tamaño de texto">
+              <button type="button" class="btn-recto secundario" id="size-down" title="Reducir tamaño de texto" aria-label="Reducir tamaño de texto">A−</button>
+              <button type="button" class="btn-recto secundario" id="size-up" title="Aumentar tamaño de texto" aria-label="Aumentar tamaño de texto">A+</button>
+            </div>
+
+            <button type="button" class="btn-recto secundario" id="font-toggle" title="Alternar cuerpo entre Source Serif 4 e IBM Plex Sans">
+              <span class="font-opt" data-mode="serif">Serif</span>
+              <span class="sep-barra">/</span>
+              <span class="font-opt" data-mode="sans">Sans</span>
+            </button>
+
+            <button type="button" class="btn-recto secundario" id="theme-toggle" aria-label="Cambiar entre papel crema y modo nocturno" title="Alternar Papel crema / Modo nocturno">
+              <span class="label-tema-claro">Papel</span>
+              <span class="label-tema-oscuro">Noche</span>
+            </button>
+
+            <button type="button" class="btn-recto secundario mobile-archive-btn" id="mobile-archive-toggle" aria-expanded="false" aria-controls="archive-aside">
+              Índice
+            </button>
+          </div>
         </div>
       </div>
     </header>
@@ -132,7 +152,7 @@
     </div>
   </div>
 
-  <script src="posts.js?v=6"></script>
-  <script src="app.js?v=8"></script>
+  <script src="posts.js?v=7"></script>
+  <script src="app.js?v=9"></script>
 </body>
 </html>
