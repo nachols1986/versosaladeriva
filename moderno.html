@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" data-theme="dark" data-font="serif" data-size="md">
+<html lang="es" data-theme="light" data-font="serif" data-size="md">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,17 +8,13 @@
   <meta property="og:title" content="Escribiéndote..." />
   <meta property="og:description" content="Lástima que la perpetuidad sólo dura un rato. Pero ese rato es suficiente." />
   <meta property="og:type" content="website" />
-  <meta name="theme-color" content="#0F1115" id="meta-theme-color" />
-  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,500;0,7..72,600;1,7..72,400&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles-moderno.css?v=11" />
+  <meta name="color-scheme" content="light dark" />
   <script>
     (function () {
       try {
         var savedTheme = localStorage.getItem('escribiendote_theme_v2');
         var theme = (savedTheme === 'light' || savedTheme === 'dark') ? savedTheme : 'dark';
+        document.querySelector('meta[name="color-scheme"]').content = theme;
         document.documentElement.setAttribute('data-theme', theme);
         var savedFont = localStorage.getItem('escribiendote_font_v2');
         var font = (savedFont === 'sans' || savedFont === 'serif') ? savedFont : 'serif';
@@ -30,6 +26,12 @@
       } catch (e) {}
     })();
   </script>
+  <meta name="theme-color" content="#0F1115" id="meta-theme-color" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,500;0,7..72,600;1,7..72,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles-moderno.css?v=12" />
 </head>
 <body>
   <div class="reading-progress" id="reading-progress" aria-hidden="true"></div>
@@ -42,7 +44,7 @@
       </a>
 
       <div class="topbar-controls">
-        <a href="index.html" class="control-pill" style="text-decoration: none;" title="Probar versión con estilo editorial de diario">
+        <a href="index.html" class="control-pill" style="text-decoration: none;" title="Volver a la versión Estilo Diario">
           <span>← Estilo Diario</span>
         </a>
 
@@ -112,7 +114,7 @@
     </section>
 
     <div class="layout-grid">
-      <main class="reading-column" id="main-content" role="main">
+      <main class="reading-column" id="main-content" role="main" tabindex="-1">
         <div id="filter-status" class="filter-banner" hidden>
           <span id="filter-status-text"></span>
           <button type="button" id="clear-filter-btn" class="text-action">Ver todos los relatos</button>
@@ -154,12 +156,6 @@
               <span class="author-signature">Por <strong>Nacho</strong></span>
               <span class="colophon-years">2007—2026</span>
             </div>
-            <div class="draft-preview-control" id="draft-control-box" hidden>
-              <label class="draft-toggle-label">
-                <input type="checkbox" id="toggle-drafts-checkbox" />
-                <span>Incluir borrador (<em>Clara</em>)</span>
-              </label>
-            </div>
           </section>
         </div>
       </aside>
@@ -168,9 +164,6 @@
     <footer class="site-footer" role="contentinfo">
       <div class="footer-inner">
         <p class="footer-quote">Escribiéndote... · 2007–2026</p>
-        <button type="button" class="footer-draft-trigger" id="footer-draft-btn" hidden title="Alternar vista previa de borradores">
-          Vista de borradores
-        </button>
       </div>
     </footer>
   </div>
@@ -181,33 +174,37 @@
     </svg>
   </button>
 
-  <div id="lightbox" class="lightbox" hidden aria-modal="true" role="dialog" aria-label="Imagen ampliada">
-    <button type="button" class="lightbox-close" id="lightbox-close" aria-label="Cerrar imagen">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <line x1="18" y1="6" x2="6" y2="18"></line>
-        <line x1="6" y1="6" x2="18" y2="18"></line>
-      </svg>
-    </button>
+  <dialog id="lightbox" class="lightbox" closedby="any" aria-labelledby="lightbox-title">
     <div class="lightbox-content">
-      <div id="lightbox-stage" class="lightbox-stage"></div>
       <div class="lightbox-bar">
         <div class="lightbox-caption">
-          <strong id="lightbox-title"></strong>
+          <h1 class="lightbox-heading" id="lightbox-title"></h1>
           <span id="lightbox-date"></span>
         </div>
-        <a id="lightbox-download" class="lightbox-download-btn" href="#" download>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="7 10 12 15 17 10"></polyline>
-            <line x1="12" y1="15" x2="12" y2="3"></line>
-          </svg>
-          <span>Descargar foto</span>
-        </a>
+        <div class="lightbox-actions">
+          <a id="lightbox-download" class="lightbox-download-btn" href="#" download>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span>Descargar foto</span>
+          </a>
+          <form method="dialog">
+            <button type="submit" class="lightbox-close" id="lightbox-close" autofocus aria-label="Cerrar imagen">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </form>
+        </div>
       </div>
+      <div id="lightbox-stage" class="lightbox-stage"></div>
     </div>
-  </div>
+  </dialog>
 
-  <script src="posts.js?v=4"></script>
-  <script src="app-moderno.js?v=8"></script>
+  <script src="posts.js?v=12"></script>
+  <script src="app-moderno.js?v=12"></script>
 </body>
 </html>

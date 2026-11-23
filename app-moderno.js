@@ -20,13 +20,12 @@
 
   const allPosts = Array.isArray(window.BLOG_POSTS) ? window.BLOG_POSTS : [];
 
-  const urlParams = new URLSearchParams(window.location.search);
-  let showDrafts = urlParams.get('drafts') === '1';
   let currentPage = 1;
   let activeYear = null;
   let activePostId = null;
   let searchQuery = '';
 
+  const mainContent = document.getElementById('main-content');
   const postsContainer = document.getElementById('posts-container');
   const paginationNav = document.getElementById('pagination-nav');
   const archiveTree = document.getElementById('archive-tree');
@@ -47,22 +46,39 @@
   const backToTopBtn = document.getElementById('back-to-top');
   const mobileArchiveToggle = document.getElementById('mobile-archive-toggle');
   const archiveAside = document.getElementById('archive-aside');
-  const draftControlBox = document.getElementById('draft-control-box');
-  const toggleDraftsCheckbox = document.getElementById('toggle-drafts-checkbox');
-  const footerDraftBtn = document.getElementById('footer-draft-btn');
   const lightbox = document.getElementById('lightbox');
   const lightboxStage = document.getElementById('lightbox-stage');
   const lightboxTitle = document.getElementById('lightbox-title');
   const lightboxDate = document.getElementById('lightbox-date');
   const lightboxDownload = document.getElementById('lightbox-download');
-  const lightboxClose = document.getElementById('lightbox-close');
   const metaThemeColor = document.getElementById('meta-theme-color');
+  const metaColorScheme = document.querySelector('meta[name="color-scheme"]');
 
-  function withTransition(fn) {
+  const supportsScrollTimeline = typeof CSS !== 'undefined' && CSS.supports && CSS.supports('animation-timeline', 'scroll()');
+
+  function routeFocusAfterNavigation() {
+    const heading = postsContainer.querySelector('.post-title');
+    if (activePostId && heading) {
+      heading.setAttribute('tabindex', '-1');
+      heading.focus({ preventScroll: true });
+    } else if (mainContent) {
+      mainContent.focus({ preventScroll: true });
+    }
+  }
+
+  function withTransition(fn, shouldRouteFocus) {
     if (document.startViewTransition) {
-      document.startViewTransition(() => fn());
+      const transition = document.startViewTransition(() => fn());
+      if (shouldRouteFocus) {
+        transition.finished.finally(() => {
+          routeFocusAfterNavigation();
+        });
+      }
     } else {
       fn();
+      if (shouldRouteFocus) {
+        routeFocusAfterNavigation();
+      }
     }
   }
 
@@ -93,7 +109,7 @@
   }
 
   function getVisiblePosts() {
-    return allPosts.filter((p) => showDrafts || !p.draft);
+    return allPosts.filter((p) => !p.draft);
   }
 
   function isPoemLike(blocks) {
@@ -103,7 +119,7 @@
     return avgLen < 68;
   }
 
-  function renderPostHTML(post, isSingleView, visibleList) {
+  function renderPostHTML(post, isSingleView, visibleList, isFirstOnPage) {
     const article = document.createElement('article');
     article.className = 'post-article';
     article.id = `post-${post.id}`;
@@ -130,13 +146,6 @@
     readTime.textContent = estimateReadingMinutes(post.blocks);
     metaTop.appendChild(readTime);
 
-    if (post.draft) {
-      const badge = document.createElement('span');
-      badge.className = 'draft-badge';
-      badge.textContent = 'Borrador';
-      metaTop.appendChild(badge);
-    }
-
     const headerActions = document.createElement('div');
     headerActions.className = 'post-header-actions';
 
@@ -144,14 +153,7 @@
     topPrintBtn.type = 'button';
     topPrintBtn.className = 'post-action-pill';
     topPrintBtn.title = 'Imprimir o guardar este relato como PDF';
-    topPrintBtn.innerHTML = `
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <polyline points="6 9 6 2 18 2 18 9"></polyline>
-        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
-        <rect x="6" y="14" width="12" height="8"></rect>
-      </svg>
-      <span>Imprimir / PDF</span>
-    `;
+    topPrintBtn.textContent = 'Imprimir / PDF';
     topPrintBtn.addEventListener('click', () => {
       if (activePostId !== post.id) {
         activePostId = post.id;
@@ -197,8 +199,11 @@
         fig.className = 'post-figure';
         const img = document.createElement('img');
         img.src = block.src;
-        img.alt = post.title;
-        img.loading = 'lazy';
+        img.alt = `Fotografía del relato ${post.title}`;
+        img.decoding = 'async';
+        if (!isFirstOnPage) {
+          img.loading = 'lazy';
+        }
         img.addEventListener('click', () => openLightbox(block.src, post.title, formatLongDate(post.date), post.id));
         fig.appendChild(img);
         body.appendChild(fig);
@@ -230,7 +235,7 @@
     copyBtn.className = 'copy-link-btn';
     copyBtn.textContent = 'Copiar enlace';
     copyBtn.addEventListener('click', () => {
-      const shareUrl = `${window.location.origin}${window.location.pathname}${post.draft ? '?drafts=1' : ''}#${post.id}`;
+      const shareUrl = `${window.location.origin}${window.location.pathname}#${post.id}`;
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(shareUrl).then(() => {
           copyBtn.textContent = '¡Enlace copiado!';
@@ -241,27 +246,11 @@
       }
     });
 
-    const printBtn = document.createElement('button');
-    printBtn.type = 'button';
-    printBtn.className = 'copy-link-btn';
-    printBtn.textContent = 'Imprimir / PDF';
-    printBtn.addEventListener('click', () => {
-      if (activePostId !== post.id) {
-        activePostId = post.id;
-        window.history.replaceState(null, '', `#${post.id}`);
-        renderMain();
-      }
-      setTimeout(() => {
-        window.print();
-      }, 120);
-    });
-
     const perma = document.createElement('a');
     perma.className = 'post-permalink';
     perma.href = `#${post.id}`;
     perma.textContent = isSingleView ? 'Enlace directo' : 'Abrir relato →';
 
-    actions.appendChild(printBtn);
     actions.appendChild(copyBtn);
     actions.appendChild(perma);
     footer.appendChild(authorSpan);
@@ -316,7 +305,6 @@
   }
 
   function renderArchive(visiblePosts) {
-    archiveTree.innerHTML = '';
     totalCountLabel.textContent = `${visiblePosts.length} textos`;
 
     const byYear = new Map();
@@ -327,44 +315,30 @@
     });
 
     const years = Array.from(byYear.keys()).sort((a, b) => Number(b) - Number(a));
-    years.forEach((year, index) => {
+    const groups = years.map((year, index) => {
       const postsInYear = byYear.get(year);
-      const group = document.createElement('div');
-      group.className = 'year-group';
+      const details = document.createElement('details');
+      details.className = 'year-group';
 
       const shouldOpen =
         activeYear === year ||
         (activePostId && postsInYear.some((p) => p.id === activePostId)) ||
         (!activeYear && !activePostId && index < 3);
 
-      if (shouldOpen) group.classList.add('open');
+      if (shouldOpen) details.open = true;
 
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'year-toggle';
-      btn.innerHTML = `
-        <span class="year-toggle-left">
-          <svg class="year-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <polyline points="9 18 15 12 9 6"></polyline>
-          </svg>
-          <span>${year}</span>
-        </span>
-        <span class="year-count">${postsInYear.length}</span>
-      `;
+      const summary = document.createElement('summary');
+      summary.className = 'year-toggle';
 
-      btn.addEventListener('click', () => {
-        const isOpen = group.classList.contains('open');
-        if (isOpen && activeYear === year) {
-          group.classList.remove('open');
-        } else {
-          group.classList.add('open');
-          activeYear = year;
-          activePostId = null;
-          currentPage = 1;
-          window.history.replaceState(null, '', `#year-${year}`);
-          withTransition(renderMain);
-        }
-      });
+      const yearLabel = document.createElement('span');
+      yearLabel.textContent = year;
+
+      const countSpan = document.createElement('span');
+      countSpan.className = 'year-count';
+      countSpan.textContent = String(postsInYear.length);
+
+      summary.appendChild(yearLabel);
+      summary.appendChild(countSpan);
 
       const ul = document.createElement('ul');
       ul.className = 'year-posts';
@@ -377,7 +351,7 @@
         a.href = `#${p.id}`;
 
         const titleSpan = document.createElement('span');
-        titleSpan.textContent = p.title + (p.draft ? ' (borrador)' : '');
+        titleSpan.textContent = p.title;
 
         const daySpan = document.createElement('span');
         daySpan.className = 'year-post-day';
@@ -389,33 +363,29 @@
         ul.appendChild(li);
       });
 
-      group.appendChild(btn);
-      group.appendChild(ul);
-      archiveTree.appendChild(group);
+      details.appendChild(summary);
+      details.appendChild(ul);
+      return details;
     });
+
+    archiveTree.replaceChildren(...groups);
   }
 
   function renderMain() {
     const visiblePosts = getVisiblePosts();
     renderArchive(visiblePosts);
 
-    postsContainer.innerHTML = '';
-    paginationNav.innerHTML = '';
+    postsContainer.replaceChildren();
+    paginationNav.replaceChildren();
 
     if (activePostId) {
       const target = visiblePosts.find((p) => p.id === activePostId) || allPosts.find((p) => p.id === activePostId);
       if (target) {
-        if (target.draft && !showDrafts) {
-          showDrafts = true;
-          draftControlBox.hidden = false;
-          toggleDraftsCheckbox.checked = true;
-          renderArchive(getVisiblePosts());
-        }
         document.title = `${target.title} · Escribiéndote...`;
         filterStatus.hidden = false;
         filterStatusText.textContent = `Viendo relato individual · ${formatLongDate(target.date)}`;
-        postsContainer.appendChild(renderPostHTML(target, true, getVisiblePosts()));
-        updateReadingProgress();
+        postsContainer.replaceChildren(renderPostHTML(target, true, visiblePosts, true));
+        updateScrollUI();
         return;
       }
     }
@@ -442,14 +412,16 @@
     if (filtered.length === 0) {
       const empty = document.createElement('div');
       empty.className = 'empty-state';
-      empty.innerHTML = `<p>No se encontraron relatos con ese criterio.</p>`;
+      const msg = document.createElement('p');
+      msg.textContent = 'No se encontraron relatos con ese criterio.';
       const resetBtn = document.createElement('button');
       resetBtn.type = 'button';
       resetBtn.className = 'text-action';
       resetBtn.textContent = 'Mostrar todos los relatos';
       resetBtn.addEventListener('click', resetFilters);
+      empty.appendChild(msg);
       empty.appendChild(resetBtn);
-      postsContainer.appendChild(empty);
+      postsContainer.replaceChildren(empty);
       return;
     }
 
@@ -458,9 +430,8 @@
     const startIdx = (currentPage - 1) * POSTS_PER_PAGE;
     const slice = filtered.slice(startIdx, startIdx + POSTS_PER_PAGE);
 
-    slice.forEach((post) => {
-      postsContainer.appendChild(renderPostHTML(post, false, visiblePosts));
-    });
+    const renderedArticles = slice.map((post, idx) => renderPostHTML(post, false, visiblePosts, idx === 0));
+    postsContainer.replaceChildren(...renderedArticles);
 
     if (totalPages > 1) {
       const prevBtn = document.createElement('button');
@@ -470,7 +441,7 @@
       prevBtn.textContent = '← Más recientes';
       prevBtn.addEventListener('click', () => {
         currentPage -= 1;
-        withTransition(renderMain);
+        withTransition(renderMain, true);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       });
 
@@ -485,16 +456,14 @@
       nextBtn.textContent = 'Anteriores →';
       nextBtn.addEventListener('click', () => {
         currentPage += 1;
-        withTransition(renderMain);
+        withTransition(renderMain, true);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       });
 
-      paginationNav.appendChild(prevBtn);
-      paginationNav.appendChild(info);
-      paginationNav.appendChild(nextBtn);
+      paginationNav.replaceChildren(prevBtn, info, nextBtn);
     }
 
-    updateReadingProgress();
+    updateScrollUI();
   }
 
   function resetFilters() {
@@ -506,10 +475,10 @@
     if (searchKbd) searchKbd.hidden = false;
     currentPage = 1;
     window.history.replaceState(null, '', window.location.pathname + window.location.search);
-    withTransition(renderMain);
+    withTransition(renderMain, true);
   }
 
-  function syncFromHash() {
+  function syncFromHash(isInitial) {
     const rawHash = decodeURIComponent(window.location.hash.replace(/^#/, '')).trim();
     if (!rawHash) {
       activePostId = null;
@@ -528,17 +497,17 @@
     if (found) {
       activePostId = found.id;
       activeYear = null;
-      withTransition(renderMain);
+      withTransition(renderMain, !isInitial);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
 
   function openLightbox(src, title, formattedDate, slug) {
-    lightboxStage.innerHTML = '';
     const img = document.createElement('img');
     img.src = src;
-    img.alt = title || '';
-    lightboxStage.appendChild(img);
+    img.alt = title ? `Fotografía ampliada de ${title}` : 'Fotografía ampliada';
+    img.decoding = 'async';
+    lightboxStage.replaceChildren(img);
     if (lightboxTitle) lightboxTitle.textContent = title || '';
     if (lightboxDate) lightboxDate.textContent = formattedDate || '';
     if (lightboxDownload) {
@@ -546,21 +515,16 @@
       const ext = src.split('.').pop() || 'jpg';
       lightboxDownload.setAttribute('download', `${slug || 'foto'}.${ext}`);
     }
-    lightbox.hidden = false;
+    if (lightbox && typeof lightbox.showModal === 'function') {
+      lightbox.showModal();
+    }
   }
 
-  function closeLightbox() {
-    lightbox.hidden = true;
-    lightboxStage.innerHTML = '';
-  }
-
-  function updateReadingProgress() {
-    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-    if (docHeight <= 0) {
-      readingProgress.style.width = '0%';
-    } else {
-      const pct = Math.min(100, Math.max(0, (window.scrollY / docHeight) * 100));
-      readingProgress.style.width = `${pct}%`;
+  function updateScrollUI() {
+    if (!supportsScrollTimeline && readingProgress) {
+      const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+      const pct = scrollable > 0 ? Math.min(1, Math.max(0, window.scrollY / scrollable)) : 0;
+      readingProgress.style.transform = `scaleX(${pct})`;
     }
     if (backToTopBtn) {
       backToTopBtn.hidden = window.scrollY < 520;
@@ -574,8 +538,8 @@
     if (sizeUpBtn) sizeUpBtn.disabled = idx >= SIZES.length - 1;
   }
 
-  window.addEventListener('scroll', updateReadingProgress, { passive: true });
-  window.addEventListener('hashchange', syncFromHash);
+  window.addEventListener('scroll', updateScrollUI, { passive: true });
+  window.addEventListener('hashchange', () => syncFromHash(false));
 
   homeLink.addEventListener('click', (e) => {
     e.preventDefault();
@@ -593,6 +557,9 @@
     const current = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
     const next = current === 'dark' ? 'light' : 'dark';
     document.documentElement.setAttribute('data-theme', next);
+    if (metaColorScheme) {
+      metaColorScheme.setAttribute('content', next);
+    }
     if (metaThemeColor) {
       metaThemeColor.setAttribute('content', next === 'dark' ? '#0F1115' : '#F5F6F8');
     }
@@ -662,9 +629,7 @@
     if (e.key === '/' && document.activeElement !== searchInput) {
       e.preventDefault();
       searchInput.focus();
-    } else if (e.key === 'Escape' && !lightbox.hidden) {
-      closeLightbox();
-    } else if (activePostId && document.activeElement !== searchInput) {
+    } else if (activePostId && document.activeElement !== searchInput && (!lightbox || !lightbox.open)) {
       const visible = getVisiblePosts();
       const idx = visible.findIndex((p) => p.id === activePostId);
       if (idx !== -1) {
@@ -682,38 +647,27 @@
     mobileArchiveToggle.setAttribute('aria-expanded', String(isOpen));
   });
 
-  footerDraftBtn.addEventListener('click', () => {
-    showDrafts = !showDrafts;
-    draftControlBox.hidden = false;
-    toggleDraftsCheckbox.checked = showDrafts;
-    if (showDrafts) {
-      activePostId = 'clara';
-      window.location.hash = 'clara';
-    } else if (activePostId === 'clara') {
-      resetFilters();
-    } else {
-      renderMain();
+  if (lightbox) {
+    lightbox.addEventListener('close', () => {
+      lightboxStage.replaceChildren();
+    });
+
+    if (typeof HTMLDialogElement !== 'undefined' && !('closedBy' in HTMLDialogElement.prototype)) {
+      const isOutside = (e, dialog) => {
+        const r = dialog.getBoundingClientRect();
+        return e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom;
+      };
+      let pressedOutside = false;
+      lightbox.addEventListener('pointerdown', (e) => {
+        pressedOutside = isOutside(e, lightbox);
+      });
+      lightbox.addEventListener('pointerup', (e) => {
+        if (pressedOutside && isOutside(e, lightbox)) {
+          lightbox.close();
+        }
+      });
     }
-  });
-
-  toggleDraftsCheckbox.addEventListener('change', (e) => {
-    showDrafts = e.target.checked;
-    if (!showDrafts && activePostId === 'clara') {
-      resetFilters();
-    } else {
-      renderMain();
-    }
-  });
-
-  lightboxClose.addEventListener('click', closeLightbox);
-  lightbox.addEventListener('click', (e) => {
-    if (e.target === lightbox) closeLightbox();
-  });
-
-  if (showDrafts) {
-    draftControlBox.hidden = false;
-    toggleDraftsCheckbox.checked = true;
   }
 
-  syncFromHash();
+  syncFromHash(true);
 })();

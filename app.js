@@ -15,17 +15,6 @@
     'domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'
   ];
 
-  const FAMILY_LETTER_IDS = new Set([
-    'clara',
-    'josefina',
-    'lucia',
-    'francisco',
-    'santiago',
-    'sebastian',
-    'juan-martin',
-    'emilia'
-  ]);
-
   const SIZES = ['sm', 'md', 'lg'];
   const POSTS_PER_PAGE = 8;
 
@@ -34,22 +23,19 @@
   let currentPage = 1;
   let activeYear = null;
   let activePostId = null;
-  let activeCategory = 'all'; // 'all' | 'letters'
   let searchQuery = '';
 
+  const mainContent = document.getElementById('main-content');
   const postsContainer = document.getElementById('posts-container');
   const paginationNav = document.getElementById('pagination-nav');
   const archiveTree = document.getElementById('archive-tree');
   const totalCountLabel = document.getElementById('total-count-label');
-  const kpiTotal = document.getElementById('kpi-total');
   const filterStatus = document.getElementById('filter-status');
   const filterStatusText = document.getElementById('filter-status-text');
   const clearFilterBtn = document.getElementById('clear-filter-btn');
   const searchInput = document.getElementById('search-input');
   const searchClearBtn = document.getElementById('search-clear');
   const homeLink = document.getElementById('home-link');
-  const tabAll = document.getElementById('tab-all');
-  const tabLetters = document.getElementById('tab-letters');
   const themeToggle = document.getElementById('theme-toggle');
   const fontToggle = document.getElementById('font-toggle');
   const sizeDownBtn = document.getElementById('size-down');
@@ -63,14 +49,34 @@
   const lightboxTitle = document.getElementById('lightbox-title');
   const lightboxDate = document.getElementById('lightbox-date');
   const lightboxDownload = document.getElementById('lightbox-download');
-  const lightboxClose = document.getElementById('lightbox-close');
   const metaThemeColor = document.getElementById('meta-theme-color');
+  const metaColorScheme = document.querySelector('meta[name="color-scheme"]');
 
-  function withTransition(fn) {
+  const supportsScrollTimeline = typeof CSS !== 'undefined' && CSS.supports && CSS.supports('animation-timeline', 'scroll()');
+
+  function routeFocusAfterNavigation() {
+    const heading = postsContainer.querySelector('.post-title');
+    if (activePostId && heading) {
+      heading.setAttribute('tabindex', '-1');
+      heading.focus({ preventScroll: true });
+    } else if (mainContent) {
+      mainContent.focus({ preventScroll: true });
+    }
+  }
+
+  function withTransition(fn, shouldRouteFocus) {
     if (document.startViewTransition) {
-      document.startViewTransition(() => fn());
+      const transition = document.startViewTransition(() => fn());
+      if (shouldRouteFocus) {
+        transition.finished.finally(() => {
+          routeFocusAfterNavigation();
+        });
+      }
     } else {
       fn();
+      if (shouldRouteFocus) {
+        routeFocusAfterNavigation();
+      }
     }
   }
 
@@ -114,7 +120,7 @@
     return avgLen < 68;
   }
 
-  function renderPostHTML(post, isSingleView, visibleList) {
+  function renderPostHTML(post, isSingleView, visibleList, isFirstOnPage) {
     const article = document.createElement('article');
     article.className = 'post-article';
     article.id = `post-${post.id}`;
@@ -190,8 +196,11 @@
         fig.className = 'post-figure';
         const img = document.createElement('img');
         img.src = block.src;
-        img.alt = post.title;
-        img.loading = 'lazy';
+        img.alt = `Fotografía del relato ${post.title}`;
+        img.decoding = 'async';
+        if (!isFirstOnPage) {
+          img.loading = 'lazy';
+        }
         img.addEventListener('click', () => openLightbox(block.src, post.title, formatLongDate(post.date), post.id));
         fig.appendChild(img);
         body.appendChild(fig);
@@ -293,9 +302,7 @@
   }
 
   function renderArchive(visiblePosts) {
-    archiveTree.innerHTML = '';
     totalCountLabel.textContent = `${visiblePosts.length} textos`;
-    if (kpiTotal) kpiTotal.textContent = String(visiblePosts.length);
 
     const byYear = new Map();
     visiblePosts.forEach((post) => {
@@ -305,41 +312,30 @@
     });
 
     const years = Array.from(byYear.keys()).sort((a, b) => Number(b) - Number(a));
-    years.forEach((year, index) => {
+    const groups = years.map((year, index) => {
       const postsInYear = byYear.get(year);
-      const group = document.createElement('div');
-      group.className = 'year-group';
+      const details = document.createElement('details');
+      details.className = 'year-group';
 
       const shouldOpen =
         activeYear === year ||
         (activePostId && postsInYear.some((p) => p.id === activePostId)) ||
         (!activeYear && !activePostId && index < 4);
 
-      if (shouldOpen) group.classList.add('open');
+      if (shouldOpen) details.open = true;
 
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'year-toggle';
-      btn.innerHTML = `
-        <span>${year}</span>
-        <span class="year-count">${postsInYear.length}</span>
-      `;
+      const summary = document.createElement('summary');
+      summary.className = 'year-toggle';
 
-      btn.addEventListener('click', () => {
-        const isOpen = group.classList.contains('open');
-        if (isOpen && activeYear === year) {
-          group.classList.remove('open');
-        } else {
-          group.classList.add('open');
-          activeYear = year;
-          activePostId = null;
-          activeCategory = 'all';
-          syncTabs();
-          currentPage = 1;
-          window.history.replaceState(null, '', `#year-${year}`);
-          withTransition(renderMain);
-        }
-      });
+      const yearLabel = document.createElement('span');
+      yearLabel.textContent = year;
+
+      const countSpan = document.createElement('span');
+      countSpan.className = 'year-count';
+      countSpan.textContent = String(postsInYear.length);
+
+      summary.appendChild(yearLabel);
+      summary.appendChild(countSpan);
 
       const ul = document.createElement('ul');
       ul.className = 'year-posts';
@@ -364,26 +360,20 @@
         ul.appendChild(li);
       });
 
-      group.appendChild(btn);
-      group.appendChild(ul);
-      archiveTree.appendChild(group);
+      details.appendChild(summary);
+      details.appendChild(ul);
+      return details;
     });
-  }
 
-  function syncTabs() {
-    if (tabAll && tabLetters) {
-      tabAll.classList.toggle('activa', activeCategory === 'all' && !activeYear && !activePostId);
-      tabLetters.classList.toggle('activa', activeCategory === 'letters');
-    }
+    archiveTree.replaceChildren(...groups);
   }
 
   function renderMain() {
     const visiblePosts = getVisiblePosts();
     renderArchive(visiblePosts);
-    syncTabs();
 
-    postsContainer.innerHTML = '';
-    paginationNav.innerHTML = '';
+    postsContainer.replaceChildren();
+    paginationNav.replaceChildren();
 
     if (activePostId) {
       const target = visiblePosts.find((p) => p.id === activePostId) || allPosts.find((p) => p.id === activePostId);
@@ -391,8 +381,8 @@
         document.title = `${target.title} · Escribiéndote...`;
         filterStatus.hidden = false;
         filterStatusText.textContent = `Ficha individual · ${target.title} (${formatLongDate(target.date)})`;
-        postsContainer.appendChild(renderPostHTML(target, true, visiblePosts));
-        updateReadingProgress();
+        postsContainer.replaceChildren(renderPostHTML(target, true, visiblePosts, true));
+        updateScrollUI();
         return;
       }
     }
@@ -408,10 +398,6 @@
       });
       filterStatus.hidden = false;
       filterStatusText.textContent = `Filtro de búsqueda: “${searchQuery.trim()}” (${filtered.length} relatos)`;
-    } else if (activeCategory === 'letters') {
-      filtered = visiblePosts.filter((p) => FAMILY_LETTER_IDS.has(p.id));
-      filterStatus.hidden = false;
-      filterStatusText.textContent = `Cartas de primer año: hijas y sobrinos (${filtered.length} cartas)`;
     } else if (activeYear) {
       filtered = visiblePosts.filter((p) => p.date.startsWith(activeYear));
       filterStatus.hidden = false;
@@ -423,14 +409,16 @@
     if (filtered.length === 0) {
       const empty = document.createElement('div');
       empty.className = 'empty-state';
-      empty.innerHTML = `<p>No se encontraron relatos con ese criterio.</p>`;
+      const msg = document.createElement('p');
+      msg.textContent = 'No se encontraron relatos con ese criterio.';
       const resetBtn = document.createElement('button');
       resetBtn.type = 'button';
       resetBtn.className = 'btn-recto secundario';
       resetBtn.textContent = 'Mostrar todos los relatos';
       resetBtn.addEventListener('click', resetFilters);
+      empty.appendChild(msg);
       empty.appendChild(resetBtn);
-      postsContainer.appendChild(empty);
+      postsContainer.replaceChildren(empty);
       return;
     }
 
@@ -439,9 +427,8 @@
     const startIdx = (currentPage - 1) * POSTS_PER_PAGE;
     const slice = filtered.slice(startIdx, startIdx + POSTS_PER_PAGE);
 
-    slice.forEach((post) => {
-      postsContainer.appendChild(renderPostHTML(post, false, visiblePosts));
-    });
+    const renderedArticles = slice.map((post, idx) => renderPostHTML(post, false, visiblePosts, idx === 0));
+    postsContainer.replaceChildren(...renderedArticles);
 
     if (totalPages > 1) {
       const prevBtn = document.createElement('button');
@@ -451,7 +438,7 @@
       prevBtn.textContent = '← Más recientes';
       prevBtn.addEventListener('click', () => {
         currentPage -= 1;
-        withTransition(renderMain);
+        withTransition(renderMain, true);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       });
 
@@ -466,51 +453,38 @@
       nextBtn.textContent = 'Anteriores →';
       nextBtn.addEventListener('click', () => {
         currentPage += 1;
-        withTransition(renderMain);
+        withTransition(renderMain, true);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       });
 
-      paginationNav.appendChild(prevBtn);
-      paginationNav.appendChild(info);
-      paginationNav.appendChild(nextBtn);
+      paginationNav.replaceChildren(prevBtn, info, nextBtn);
     }
 
-    updateReadingProgress();
+    updateScrollUI();
   }
 
   function resetFilters() {
     activeYear = null;
     activePostId = null;
-    activeCategory = 'all';
     searchQuery = '';
     searchInput.value = '';
     searchClearBtn.hidden = true;
     currentPage = 1;
     window.history.replaceState(null, '', window.location.pathname + window.location.search);
-    withTransition(renderMain);
+    withTransition(renderMain, true);
   }
 
-  function syncFromHash() {
+  function syncFromHash(isInitial) {
     const rawHash = decodeURIComponent(window.location.hash.replace(/^#/, '')).trim();
     if (!rawHash) {
       activePostId = null;
       activeYear = null;
-      activeCategory = 'all';
-      renderMain();
-      return;
-    }
-    if (rawHash === 'cartas') {
-      activeCategory = 'letters';
-      activePostId = null;
-      activeYear = null;
-      currentPage = 1;
       renderMain();
       return;
     }
     if (rawHash.startsWith('year-')) {
       activeYear = rawHash.slice(5);
       activePostId = null;
-      activeCategory = 'all';
       currentPage = 1;
       renderMain();
       return;
@@ -519,18 +493,17 @@
     if (found) {
       activePostId = found.id;
       activeYear = null;
-      activeCategory = 'all';
-      withTransition(renderMain);
+      withTransition(renderMain, !isInitial);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
 
   function openLightbox(src, title, formattedDate, slug) {
-    lightboxStage.innerHTML = '';
     const img = document.createElement('img');
     img.src = src;
-    img.alt = title || '';
-    lightboxStage.appendChild(img);
+    img.alt = title ? `Fotografía ampliada de ${title}` : 'Fotografía ampliada';
+    img.decoding = 'async';
+    lightboxStage.replaceChildren(img);
     if (lightboxTitle) lightboxTitle.textContent = title || '';
     if (lightboxDate) lightboxDate.textContent = formattedDate || '';
     if (lightboxDownload) {
@@ -538,21 +511,16 @@
       const ext = src.split('.').pop() || 'jpg';
       lightboxDownload.setAttribute('download', `${slug || 'foto'}.${ext}`);
     }
-    lightbox.hidden = false;
+    if (lightbox && typeof lightbox.showModal === 'function') {
+      lightbox.showModal();
+    }
   }
 
-  function closeLightbox() {
-    lightbox.hidden = true;
-    lightboxStage.innerHTML = '';
-  }
-
-  function updateReadingProgress() {
-    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-    if (docHeight <= 0) {
-      readingProgress.style.width = '0%';
-    } else {
-      const pct = Math.min(100, Math.max(0, (window.scrollY / docHeight) * 100));
-      readingProgress.style.width = `${pct}%`;
+  function updateScrollUI() {
+    if (!supportsScrollTimeline && readingProgress) {
+      const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+      const pct = scrollable > 0 ? Math.min(1, Math.max(0, window.scrollY / scrollable)) : 0;
+      readingProgress.style.transform = `scaleX(${pct})`;
     }
     if (backToTopBtn) {
       backToTopBtn.hidden = window.scrollY < 520;
@@ -566,32 +534,13 @@
     if (sizeUpBtn) sizeUpBtn.disabled = idx >= SIZES.length - 1;
   }
 
-  window.addEventListener('scroll', updateReadingProgress, { passive: true });
-  window.addEventListener('hashchange', syncFromHash);
+  window.addEventListener('scroll', updateScrollUI, { passive: true });
+  window.addEventListener('hashchange', () => syncFromHash(false));
 
   homeLink.addEventListener('click', (e) => {
     e.preventDefault();
     resetFilters();
   });
-
-  if (tabAll) {
-    tabAll.addEventListener('click', (e) => {
-      e.preventDefault();
-      resetFilters();
-    });
-  }
-
-  if (tabLetters) {
-    tabLetters.addEventListener('click', (e) => {
-      e.preventDefault();
-      activeCategory = 'letters';
-      activePostId = null;
-      activeYear = null;
-      currentPage = 1;
-      window.history.replaceState(null, '', '#cartas');
-      withTransition(renderMain);
-    });
-  }
 
   clearFilterBtn.addEventListener('click', resetFilters);
 
@@ -599,6 +548,9 @@
     const current = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
     const next = current === 'dark' ? 'light' : 'dark';
     document.documentElement.setAttribute('data-theme', next);
+    if (metaColorScheme) {
+      metaColorScheme.setAttribute('content', next);
+    }
     if (metaThemeColor) {
       metaThemeColor.setAttribute('content', next === 'dark' ? '#111815' : '#1f3a2e');
     }
@@ -666,9 +618,7 @@
     if (e.key === '/' && document.activeElement !== searchInput) {
       e.preventDefault();
       searchInput.focus();
-    } else if (e.key === 'Escape' && !lightbox.hidden) {
-      closeLightbox();
-    } else if (activePostId && document.activeElement !== searchInput) {
+    } else if (activePostId && document.activeElement !== searchInput && (!lightbox || !lightbox.open)) {
       const visible = getVisiblePosts();
       const idx = visible.findIndex((p) => p.id === activePostId);
       if (idx !== -1) {
@@ -686,10 +636,27 @@
     mobileArchiveToggle.setAttribute('aria-expanded', String(isOpen));
   });
 
-  lightboxClose.addEventListener('click', closeLightbox);
-  lightbox.addEventListener('click', (e) => {
-    if (e.target === lightbox) closeLightbox();
-  });
+  if (lightbox) {
+    lightbox.addEventListener('close', () => {
+      lightboxStage.replaceChildren();
+    });
 
-  syncFromHash();
+    if (typeof HTMLDialogElement !== 'undefined' && !('closedBy' in HTMLDialogElement.prototype)) {
+      const isOutside = (e, dialog) => {
+        const r = dialog.getBoundingClientRect();
+        return e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom;
+      };
+      let pressedOutside = false;
+      lightbox.addEventListener('pointerdown', (e) => {
+        pressedOutside = isOutside(e, lightbox);
+      });
+      lightbox.addEventListener('pointerup', (e) => {
+        if (pressedOutside && isOutside(e, lightbox)) {
+          lightbox.close();
+        }
+      });
+    }
+  }
+
+  syncFromHash(true);
 })();
